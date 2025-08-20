@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WR Drawing Repository - Live Data</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            margin: 0;
+            background-color: #f5f7fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .header { 
+            text-align: center; 
+            font-size: 32px; 
+            font-weight: bold; 
+            color: #2c3e50;
+            padding-bottom: 25px; 
+            border-bottom: 4px solid #007cba;
+            margin-bottom: 35px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #28a745;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .filters { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px; 
+            margin-bottom: 35px; 
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .filter-group { 
+            display: flex; 
+            flex-direction: column;
+            min-width: 280px;
+        }
+        
+        .filter-group label {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        select { 
+            width: 100%; 
+            min-height: 200px;
+            max-height: 250px;
+            padding: 12px;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: white;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            resize: vertical;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 0 3px rgba(0,124,186,0.2);
+        }
+        
+        select option {
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        select option:checked {
+            background: linear-gradient(135deg, #007cba 0%, #005a87 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        select option:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .selected-count {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #007cba;
+            background-color: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .reset-btn { 
+            padding: 15px 25px; 
+            margin-top: 25px; 
+            height: auto;
+            min-height: 50px;
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220,53,69,0.2);
+        }
+        
+        .reset-btn:hover {
+            background: linear-gradient(135deg, #b02a37 0%, #8b1e2b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220,53,69,0.3);
+        }
+        
+        input[type="text"].col-search { 
+            width: 100%; 
+            box-sizing: border-box; 
+            padding: 8px 12px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"].col-search:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 0 2px rgba(0,124,186,0.2);
+        }
+        
+        .results-section {
+            margin-top: 35px;
+        }
+        
+        .results-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #007cba;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stats {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            color: #155724;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(40,167,69,0.1);
+        }
+        
+        table { 
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        th, td { 
+            border: 1px solid #dee2e6;
+            padding: 14px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th { 
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+            color: white;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.3s ease;
+            transform: scale(1.001);
+        }
+        
+        a {
+            color: #007cba;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            color: white;
+            background-color: #007cba;
+            text-decoration: none;
+            transform: scale(1.05);
+        }
+        
+        /* Scrollbar styling */
+        select::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        select::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        select::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #007cba 0%, #005a87 100%);
+            border-radius: 10px;
+            border: 2px solid #f1f1f1;
+        }
+        
+        select::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #005a87 0%, #003d5c 100%);
+        }
+        
+        select.disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        select.disabled:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .filter-group.disabled {
+            opacity: 0.6;
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .pagination-info {
+            font-weight: 600;
+            color: #495057;
+            font-size: 16px;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #007cba 0%, #005a87 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #005a87 0%, #003d5c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,124,186,0.3);
+        }
+        
+        .pagination-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .page-size-select {
+            padding: 8px 12px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background-color: white;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .page-size-select:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 0 2px rgba(0,124,186,0.2);
+        }
+        
+        .page-input-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .page-input {
+            width: 60px;
+            padding: 8px 10px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            background-color: white;
+            color: #495057;
+        }
+        
+        .page-input:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 0 2px rgba(0,124,186,0.2);
+        }
+        
+        .page-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007cba;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            
+            .pagination-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .pagination-controls {
+                justify-content: center;
+                gap: 10px;
+            }
+            
+            .pagination-btn {
+                min-width: 70px;
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            
+            .page-input {
+                width: 50px;
+                padding: 6px 8px;
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .filters {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .filter-group {
+                min-width: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .filters {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            select {
+                min-height: 150px;
+            }
+            
+            .header {
+                font-size: 24px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 10px 6px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                font-size: 20px;
+            }
+            
+            select {
+                min-height: 120px;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            WR Drawing Repository
+            <span class="live-indicator" title="Live data from Google Sheets"></span>
+        </div>
+
+        <form id="filterForm">
+            <div class="filters">
+                
+        <div class="filter-group">
+            <label for="Division">Division:</label>
+            <div class="select-wrapper">
+                <select id="Division" onchange="handleCascadingFilter('Division', 0)" class="">
+                    <option value="">-- Select Division --</option>
+                </select>
+                <div class="selected-count" id="Division-count">Loading...</div>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label for="Section">Section:</label>
+            <div class="select-wrapper">
+                <select id="Section" onchange="handleCascadingFilter('Section', 1)" class="disabled">
+                    <option value="">-- Select Section --</option>
+                </select>
+                <div class="selected-count" id="Section-count">Loading...</div>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label for="Drawing Type">Drawing Type:</label>
+            <div class="select-wrapper">
+                <select id="Drawing Type" onchange="handleCascadingFilter('Drawing Type', 2)" class="disabled">
+                    <option value="">-- Select Drawing Type --</option>
+                </select>
+                <div class="selected-count" id="Drawing Type-count">Loading...</div>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label for="Type of Structure">Type of Structure:</label>
+            <div class="select-wrapper">
+                <select id="Type of Structure" onchange="handleCascadingFilter('Type of Structure', 3)" class="disabled">
+                    <option value="">-- Select Type of Structure --</option>
+                </select>
+                <div class="selected-count" id="Type of Structure-count">Loading...</div>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label style="visibility: hidden;">Reset</label>
+            <button type="button" onclick="resetCascadingFilters()" class="reset-btn">Reset All Filters</button>
+        </div>
+            </div>
+        </form>
+
+        <div class="results-section">
+            <div class="results-header">Drawing Records</div>
+            <div id="stats" class="stats">
+                🔄 Loading data from Google Sheets... <span class="loading"></span>
+                <button class="refresh-btn" onclick="loadDataFromGoogleSheets()" title="Refresh data">🔄 Refresh</button>
+            </div>
+            
+            <div class="pagination-container" style="display: none;" id="paginationTop">
+                <div class="pagination-info">
+                    Page <span id="currentPageDisplay">1</span> of <span id="totalPagesDisplay">1</span>
+                </div>
+                
+                <div class="pagination-controls">
+                    <button class="pagination-btn" id="firstBtn" onclick="goToPage(1)">First</button>
+                    <button class="pagination-btn" id="prevBtn" onclick="previousPage()">Previous</button>
+                    
+                    <div class="page-input-container">
+                        <span class="page-label">Go to:</span>
+                        <input type="number" id="pageInput" class="page-input" min="1" value="1" 
+                               onchange="goToPageFromInput()" onkeypress="handlePageInputEnter(event)">
+                    </div>
+                    
+                    <button class="pagination-btn" id="nextBtn" onclick="nextPage()">Next</button>
+                    <button class="pagination-btn" id="lastBtn" onclick="goToLastPage()">Last</button>
+                    
+                    <select id="pageSizeSelect" class="page-size-select" onchange="changePageSize()">
+                        <option value="25">25 per page</option>
+                        <option value="50" selected>50 per page</option>
+                        <option value="100">100 per page</option>
+                        <option value="200">200 per page</option>
+                    </select>
+                </div>
+            </div>
+            
+            <table id="resultsTable">
+                <thead>
+                    <tr><th>Sr. No.</th><th>Division</th><th>Section</th><th>Project</th><th>Bridge No.</th><th>Span</th><th>Chainage</th><th>Drawing Type</th><th>Type of Structure</th><th>Drawing Title</th><th>Revision</th><th>Date</th><th>Drawing No.</th><th>Remark</th><th>Drawing Link</th><th>Full Drawing Path</th></tr>
+                    <tr><td></td><td><input type="text" class="col-search" data-col="Division" onkeyup="columnSearch()" placeholder="Search Division..."></td><td><input type="text" class="col-search" data-col="Section" onkeyup="columnSearch()" placeholder="Search Section..."></td><td><input type="text" class="col-search" data-col="Project" onkeyup="columnSearch()" placeholder="Search Project..."></td><td><input type="text" class="col-search" data-col="Bridge No." onkeyup="columnSearch()" placeholder="Search Bridge No...."></td><td><input type="text" class="col-search" data-col="Span" onkeyup="columnSearch()" placeholder="Search Span..."></td><td><input type="text" class="col-search" data-col="Chainage" onkeyup="columnSearch()" placeholder="Search Chainage..."></td><td><input type="text" class="col-search" data-col="Drawing Type" onkeyup="columnSearch()" placeholder="Search Drawing Type..."></td><td><input type="text" class="col-search" data-col="Type of Structure" onkeyup="columnSearch()" placeholder="Search Type of Structure..."></td><td><input type="text" class="col-search" data-col="Drawing Title" onkeyup="columnSearch()" placeholder="Search Drawing Title..."></td><td><input type="text" class="col-search" data-col="Revision" onkeyup="columnSearch()" placeholder="Search Revision..."></td><td><input type="text" class="col-search" data-col="Date" onkeyup="columnSearch()" placeholder="Search Date..."></td><td><input type="text" class="col-search" data-col="Drawing No." onkeyup="columnSearch()" placeholder="Search Drawing No...."></td><td><input type="text" class="col-search" data-col="Remark" onkeyup="columnSearch()" placeholder="Search Remark..."></td><td><input type="text" class="col-search" data-col="Drawing Link" onkeyup="columnSearch()" placeholder="Search Drawing Link..."></td><td><input type="text" class="col-search" data-col="Full Drawing Path" onkeyup="columnSearch()" placeholder="Search Full Drawing Path..."></td></tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will be dynamically generated from Google Sheets -->
+                </tbody>
+            </table>
+            
+            <div class="pagination-container" style="display: none;" id="paginationBottom">
+                <div class="pagination-info">
+                    Showing <span id="showingRangeBottom">1-50</span> of <span id="filteredCountBottom">0</span> records
+                </div>
+                
+                <div class="pagination-controls">
+                    <button class="pagination-btn" onclick="goToPage(1)">First</button>
+                    <button class="pagination-btn" onclick="previousPage()">Previous</button>
+                    <button class="pagination-btn" onclick="nextPage()">Next</button>
+                    <button class="pagination-btn" onclick="goToLastPage()">Last</button>
+                </div>
+            </div>
+        </div>
+
+<script>
+// Global variables
+let currentPage = 1;
+let pageSize = 50;
+let filteredRows = [];
+let totalFilteredRecords = 0;
+let allTableData = [];
+
+// Google Sheets configuration
+const GOOGLE_SHEET_ID = '1d0W25gtciV1J7qu5BBTqB1zhoPNIVR9-ct7kSO7sTSE';
+const GOOGLE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv`;
+
+// Constants
+const filterColumns = ["Division", "Section", "Drawing Type", "Type of Structure"];
+const dfColumnList = ["Sr. No.", "Division", "Section", "Project", "Bridge No.", "Span", "Chainage", "Drawing Type", "Type of Structure", "Drawing Title", "Revision", "Date", "Drawing No.", "Remark", "Drawing Link", "Full Drawing Path"];
+const hierarchy = ["Division", "Section", "Drawing Type", "Type of Structure"];
+
+// Store original data for each level
+let originalData = {};
+let cascadingFilters = {};
+
+// CSV parsing helper function
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                current += '"';
+                i++; // Skip next quote
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result;
+}
+
+// Load data from Google Sheets
+async function loadDataFromGoogleSheets() {
+    try {
+        console.log("Loading data from Google Sheets...");
+        
+        // Show loading state
+        document.getElementById("stats").innerHTML = '🔄 Loading data from Google Sheets... <span class="loading"></span><button class="refresh-btn" onclick="loadDataFromGoogleSheets()" title="Refresh data">🔄 Refresh</button>';
+        
+        const response = await fetch(GOOGLE_SHEET_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}- ${response.statusText}. URL: ${GOOGLE_SHEET_URL}`);
+        }
+        
+        const csvText = await response.text();
+        
+        // Parse CSV
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+        
+        // Convert to our data structure
+        allTableData = [];
+        
+        for (let i = 2; i < lines.length; i++) {
+            const values = parseCSVLine(lines[i]);
+            const rowData = {};
+            
+            for (let j = 0; j < dfColumnList.length; j++) {
+                const colName = dfColumnList[j];
+                const value = j < values.length ? values[j] : "";
+                
+                // Handle drawing links
+                if (colName === "Drawing Link" && value && value !== "" && value !== "nan") {
+                    const fullPathIndex = dfColumnList.indexOf("Full Drawing Path");
+                    const fullPath = fullPathIndex >= 0 && fullPathIndex < values.length ? values[fullPathIndex] : "";
+                    
+                    let cleanedPath = fullPath.replace("10.3.19.43", "").replace("Engg_Works/Drg_Repo", "").replace(/\\\\/g, "/");
+                    while (cleanedPath.startsWith("/")) {
+                        cleanedPath = cleanedPath.substring(1);
+                    }
+                    
+                    rowData[colName] = {
+                        text: value,
+                        link: cleanedPath || value,
+                        tooltip: fullPath,
+                        isLink: true
+                    };
+                } else {
+                    rowData[colName] = {
+                        text: value,
+                        isLink: false
+                    };
+                }
+            }
+            
+            allTableData.push(rowData);
+        }
+        
+        console.log(`Loaded ${allTableData.length} records from Google Sheets`);
+        
+        // Initialize the interface
+        initializeOriginalData();
+        loadInitialData();
+        initializePagination();
+        filterTable();
+        
+        // Update record count and show success message
+        document.getElementById("stats").innerHTML = `
+            🗂️ Total records: <span id="totalCount">${allTableData.length}</span> | 
+            👁️ Filtered records: <span id="filteredCount">${allTableData.length}</span> | 
+            👁️ Showing: <span id="showingRange">1-50</span> |
+            🔗 Records with links: <span id="linkCount">0</span>
+            <button class="refresh-btn" onclick="loadDataFromGoogleSheets()" title="Refresh data">🔄 Refresh</button>
+        `;
+        
+        // Show pagination controls
+        document.getElementById("paginationTop").style.display = "flex";
+        document.getElementById("paginationBottom").style.display = "flex";
+        
+    } catch (error) {
+        console.error("Error loading data from Google Sheets:", error);
+        
+        document.getElementById("stats").innerHTML = `
+            <div class="error-message">
+                ❌ Failed to load data from Google Sheets: ${error.message}
+                <br><br>
+                💡 Please check:
+                <br>• Google Sheet ID is correct: <code>${GOOGLE_SHEET_ID}</code>
+                <br>• Sheet is shared publicly (Anyone with link can view)
+                <br>• Internet connection is working
+                <br><br>
+                <button class="refresh-btn" onclick="loadDataFromGoogleSheets()">🔄 Try Again</button>
+            </div>
+        `;
+    }
+}
+
+function loadInitialData() {
+    const tbody = document.querySelector("#resultsTable tbody");
+    
+    // Clear existing rows except search row
+    const existingRows = tbody.querySelectorAll("tr.data-row");
+    existingRows.forEach(row => row.remove());
+    
+    // Create DOM elements for first page only
+    const initialPageSize = Math.min(pageSize, allTableData.length);
+    
+    for (let i = 0; i < initialPageSize; i++) {
+        const rowElement = document.createElement('tr');
+        rowElement.className = 'data-row';
+        rowElement.setAttribute('data-row-index', i);
+        
+        dfColumnList.forEach(col => {
+            const cell = document.createElement('td');
+            const cellData = allTableData[i][col] || { text: "", isLink: false };
+            
+            if (cellData.isLink) {
+                cell.innerHTML = `<a href="${cellData.link}" target="_blank" title="${cellData.tooltip}" style="color: #007cba; text-decoration: underline;">${cellData.text}</a>`;
+           }else {
+               cell.textContent = cellData.text;
+           }
+           
+           rowElement.appendChild(cell);
+       });
+       
+       tbody.appendChild(rowElement);
+   }
+   
+   console.log(`Loaded initial ${initialPageSize} rows`);
+}
+
+function initializeOriginalData() {
+   for (const col of hierarchy) {
+       originalData[col] = new Set();
+       const colIndex = dfColumnList.indexOf(col);
+       
+       if (colIndex >= 0) {
+           allTableData.forEach(rowData => {
+               const cellData = rowData[col];
+               if (cellData && cellData.text && cellData.text !== "nan") {
+                   originalData[col].add(cellData.text);
+               }
+           });
+       }
+   }
+   
+   // Update dropdown options for the first level
+   hierarchy.forEach((col, index) => {
+       const select = document.getElementById(col);
+       if (select) {
+           if (index === 0) {
+               // First dropdown: populate with options
+               select.innerHTML = `<option value="">-- Select ${col} --</option>`;
+               const sortedValues = Array.from(originalData[col]).sort();
+               sortedValues.forEach(value => {
+                   const option = document.createElement('option');
+                   option.value = value;
+                   option.textContent = value;
+                   select.appendChild(option);
+               });
+               select.classList.remove('disabled');
+               select.disabled = false;
+               updateSelectedCount(col, originalData[col].size);
+           } else {
+               // Subsequent dropdowns: clear and disable
+               select.innerHTML = `<option value="">-- Select ${col} --</option>`;
+               select.classList.add('disabled');
+               select.disabled = true;
+               updateSelectedCount(col, 0);
+           }
+       }
+   });
+}
+
+function getFilteredData(upToLevel) {
+   const filteredData = {};
+   
+   // Initialize sets for each column
+   for (const col of hierarchy) {
+       filteredData[col] = new Set();
+   }
+   
+   // Filter data based on current selections up to the specified level
+   allTableData.forEach(rowData => {
+       let includeRow = true;
+       
+       // Check if row matches all filters up to the specified level
+       for (let i = 0; i <= upToLevel; i++) {
+           const col = hierarchy[i];
+           if (cascadingFilters[col]) {
+               const cellData = rowData[col];
+               if (!cellData || cellData.text !== cascadingFilters[col]) {
+                   includeRow = false;
+                   break;
+               }
+           }
+       }
+       
+       // If row matches filters, add its values to filtered data
+       if (includeRow) {
+           hierarchy.forEach(col => {
+               const cellData = rowData[col];
+               if (cellData && cellData.text && cellData.text !== "nan") {
+                   filteredData[col].add(cellData.text);
+               }
+           });
+       }
+   });
+   
+   return filteredData;
+}
+
+function updateDropdownOptions(col, availableValues, currentLevel) {
+   const select = document.getElementById(col);
+   if (!select) return;
+   
+   // Clear existing options except the first one
+   select.innerHTML = `<option value="">-- Select ${col} --</option>`;
+   
+   // Add available options
+   const sortedValues = Array.from(availableValues).sort();
+   sortedValues.forEach(value => {
+       const option = document.createElement('option');
+       option.value = value;
+       option.textContent = value;
+       select.appendChild(option);
+   });
+   
+   // Update count
+   updateSelectedCount(col, availableValues.size);
+   
+   // Enable/disable dropdown based on whether it has options and previous selections
+   if (currentLevel === 0 || (currentLevel > 0 && cascadingFilters[hierarchy[currentLevel - 1]])) {
+       select.classList.remove('disabled');
+       select.disabled = false;
+   } else {
+       select.classList.add('disabled');
+       select.disabled = true;
+   }
+}
+
+function handleCascadingFilter(selectedCol, currentLevel) {
+   const select = document.getElementById(selectedCol);
+   const selectedValue = select.value;
+   
+   // Update cascading filters
+   if (selectedValue) {
+       cascadingFilters[selectedCol] = selectedValue;
+   } else {
+       delete cascadingFilters[selectedCol];
+   }
+   
+   // Clear all subsequent filters
+   for (let i = currentLevel + 1; i < hierarchy.length; i++) {
+       const nextCol = hierarchy[i];
+       delete cascadingFilters[nextCol];
+       const nextSelect = document.getElementById(nextCol);
+       if (nextSelect) {
+           nextSelect.value = "";
+           nextSelect.classList.add('disabled');
+           nextSelect.disabled = true;
+       }
+   }
+   
+   // Update subsequent dropdowns based on current selection
+   if (selectedValue) {
+       const filteredData = getFilteredData(currentLevel);
+       
+       // Update next level dropdown if it exists
+       if (currentLevel + 1 < hierarchy.length) {
+           const nextCol = hierarchy[currentLevel + 1];
+           const nextSelect = document.getElementById(nextCol);
+           if (nextSelect && filteredData[nextCol]) {
+               updateDropdownOptions(nextCol, filteredData[nextCol], currentLevel + 1);
+           }
+       }
+   } else {
+       // If current selection is cleared, reset subsequent levels
+       for (let i = currentLevel + 1; i < hierarchy.length; i++) {
+           const col = hierarchy[i];
+           const select = document.getElementById(col);
+           if (select) {
+               select.innerHTML = `<option value="">-- Select ${col} --</option>`;
+               updateSelectedCount(col, 0);
+               select.classList.add('disabled');
+               select.disabled = true;
+           }
+       }
+   }
+   
+   // Apply table filtering
+   filterTable();
+}
+
+function updateSelectedCount(col, count) {
+   const countElement = document.getElementById(col + '-count');
+   if (!countElement) return;
+   
+   if (count === 0) {
+       countElement.textContent = "No options";
+       countElement.style.backgroundColor = "#f8d7da";
+       countElement.style.color = "#721c24";
+   } else {
+       countElement.textContent = `${count} option${count > 1 ? 's' : ''}`;
+       countElement.style.backgroundColor = "#e3f2fd";
+       countElement.style.color = "#007cba";
+   }
+}
+
+function filterTable() {
+   // Get filtered row indices
+   const filteredIndices = [];
+   
+   allTableData.forEach((rowData, index) => {
+       let show = true;
+       
+       // Apply cascading dropdown filters
+       for (const col of hierarchy) {
+           if (cascadingFilters[col]) {
+               const cellData = rowData[col];
+               if (!cellData || cellData.text !== cascadingFilters[col]) {
+                   show = false;
+                   break;
+               }
+           }
+       }
+       
+       // Apply column search filters
+       if (show) {
+           const inputs = document.querySelectorAll(".col-search");
+           for (let input of inputs) {
+               const col = input.getAttribute("data-col");
+               const filter = input.value.toLowerCase().trim();
+               
+               if (filter) {
+                   const cellData = rowData[col];
+                   const cellText = cellData ? cellData.text.toLowerCase() : "";
+                   if (!cellText.includes(filter)) {
+                       show = false;
+                       break;
+                   }
+               }
+           }
+       }
+       
+       if (show) {
+           filteredIndices.push(index);
+       }
+   });
+   
+   filteredRows = filteredIndices;
+   totalFilteredRecords = filteredRows.length;
+   currentPage = 1; // Reset to first page when filtering
+   
+   // Update stats
+   if (document.getElementById("filteredCount")) {
+       document.getElementById("filteredCount").textContent = totalFilteredRecords;
+   }
+   
+   updatePagination();
+}
+
+function columnSearch() {
+   filterTable();
+}
+
+function resetCascadingFilters() {
+   // Clear all cascading filters
+   cascadingFilters = {};
+   
+   // Reset all dropdowns
+   hierarchy.forEach((col, index) => {
+       const select = document.getElementById(col);
+       if (select) {
+           if (index === 0) {
+               // First dropdown: restore original options
+               select.innerHTML = `<option value="">-- Select ${col} --</option>`;
+               const sortedValues = Array.from(originalData[col]).sort();
+               sortedValues.forEach(value => {
+                   const option = document.createElement('option');
+                   option.value = value;
+                   option.textContent = value;
+                   select.appendChild(option);
+               });
+               select.classList.remove('disabled');
+               select.disabled = false;
+               updateSelectedCount(col, originalData[col].size);
+           } else {
+               // Subsequent dropdowns: clear and disable
+               select.innerHTML = `<option value="">-- Select ${col} --</option>`;
+               select.classList.add('disabled');
+               select.disabled = true;
+               updateSelectedCount(col, 0);
+           }
+       }
+   });
+   
+   // Reset search inputs
+   document.querySelectorAll(".col-search").forEach(input => {
+       input.value = "";
+   });
+   
+   // Refresh the table
+   filterTable();
+}
+
+function initializePagination() {
+   filteredRows = Array.from({length: allTableData.length}, (_, i) => i);
+   totalFilteredRecords = filteredRows.length;
+   updatePagination();
+}
+
+function updatePagination() {
+   const totalPages = Math.ceil(totalFilteredRecords / pageSize);
+   const startRecord = totalFilteredRecords === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+   const endRecord = Math.min(currentPage * pageSize, totalFilteredRecords);
+   
+   // Update pagination info
+   if (document.getElementById("currentPageDisplay")) {
+       document.getElementById("currentPageDisplay").textContent = totalFilteredRecords === 0 ? 0 : currentPage;
+       document.getElementById("totalPagesDisplay").textContent = Math.max(totalPages, 1);
+       document.getElementById("pageInput").value = currentPage;
+       document.getElementById("pageInput").max = totalPages;
+   }
+   
+   // Update showing range
+   const rangeText = totalFilteredRecords === 0 ? "0-0" : `${startRecord}-${endRecord}`;
+   if (document.getElementById("showingRange")) {
+       document.getElementById("showingRange").textContent = rangeText;
+       document.getElementById("showingRangeBottom").textContent = rangeText;
+       document.getElementById("filteredCountBottom").textContent = totalFilteredRecords;
+   }
+   
+   // Update button states
+   const firstBtn = document.getElementById("firstBtn");
+   const prevBtn = document.getElementById("prevBtn");
+   const nextBtn = document.getElementById("nextBtn");
+   const lastBtn = document.getElementById("lastBtn");
+   
+   if (firstBtn) {
+       firstBtn.disabled = currentPage <= 1;
+       prevBtn.disabled = currentPage <= 1;
+       nextBtn.disabled = currentPage >= totalPages;
+       lastBtn.disabled = currentPage >= totalPages;
+   }
+   
+   // Show/hide appropriate rows
+   displayCurrentPage();
+}
+
+function displayCurrentPage() {
+   const tbody = document.querySelector("#resultsTable tbody");
+   
+   // Clear existing data rows
+   const existingRows = tbody.querySelectorAll("tr.data-row");
+   existingRows.forEach(row => row.remove());
+   
+   // Calculate page bounds
+   const startIndex = (currentPage - 1) * pageSize;
+   const endIndex = Math.min(startIndex + pageSize, filteredRows.length);
+   
+   // Create rows for current page
+   for (let i = startIndex; i < endIndex; i++) {
+       const dataIndex = filteredRows[i];
+       const rowData = allTableData[dataIndex];
+       
+       const rowElement = document.createElement('tr');
+       rowElement.className = 'data-row';
+       rowElement.setAttribute('data-row-index', dataIndex);
+       
+       dfColumnList.forEach(col => {
+           const cell = document.createElement('td');
+           const cellData = rowData[col] || { text: "", isLink: false };
+           
+           if (cellData.isLink) {
+               cell.innerHTML = `<a href="${cellData.link}" target="_blank" title="${cellData.tooltip}" style="color: #007cba; text-decoration: underline;">${cellData.text}</a>`;
+           } else {
+               cell.textContent = cellData.text;
+           }
+           
+           rowElement.appendChild(cell);
+       });
+       
+       tbody.appendChild(rowElement);
+   }
+   
+   updateVisibleLinkCount();
+}
+
+function updateVisibleLinkCount() {
+   const startIndex = (currentPage - 1) * pageSize;
+   const endIndex = Math.min(startIndex + pageSize, filteredRows.length);
+   let linkCount = 0;
+   
+   for (let i = startIndex; i < endIndex; i++) {
+       const dataIndex = filteredRows[i];
+       const rowData = allTableData[dataIndex];
+       
+       dfColumnList.forEach(col => {
+           const cellData = rowData[col];
+           if (cellData && cellData.isLink) {
+               linkCount++;
+           }
+       });
+   }
+   
+   if (document.getElementById("linkCount")) {
+       document.getElementById("linkCount").textContent = linkCount;
+   }
+}
+
+function goToPage(page) {
+   const totalPages = Math.ceil(totalFilteredRecords / pageSize);
+   if (page >= 1 && page <= totalPages) {
+       currentPage = page;
+       updatePagination();
+   }
+}
+
+function nextPage() {
+   const totalPages = Math.ceil(totalFilteredRecords / pageSize);
+   if (currentPage < totalPages) {
+       currentPage++;
+       updatePagination();
+   }
+}
+
+function previousPage() {
+   if (currentPage > 1) {
+       currentPage--;
+       updatePagination();
+   }
+}
+
+function goToLastPage() {
+   const totalPages = Math.ceil(totalFilteredRecords / pageSize);
+   if (totalPages > 0) {
+       currentPage = totalPages;
+       updatePagination();
+   }
+}
+
+function goToPageFromInput() {
+   const pageInput = document.getElementById("pageInput");
+   const page = parseInt(pageInput.value);
+   const totalPages = Math.ceil(totalFilteredRecords / pageSize);
+   
+   if (page >= 1 && page <= totalPages) {
+       goToPage(page);
+   } else {
+       pageInput.value = currentPage;
+   }
+}
+
+function handlePageInputEnter(event) {
+   if (event.key === 'Enter') {
+       goToPageFromInput();
+   }
+}
+
+function changePageSize() {
+   const pageSizeSelect = document.getElementById("pageSizeSelect");
+   pageSize = parseInt(pageSizeSelect.value);
+   currentPage = 1; // Reset to first page
+   updatePagination();
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+   console.log("Page loaded - starting Google Sheets integration");
+   
+   // Load data from Google Sheets
+   loadDataFromGoogleSheets();
+});
+</script>
+</body>
+</html>
